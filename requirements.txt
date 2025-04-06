@@ -1,2 +1,12 @@
+python-dotenv
+streamlit
+langchain-groq==0.1.9
+langgraph==0.2.1
+openbb
+pandas_ta==0.3.14b
+duckduckgo_search
+numpy==1.26.4
+flask
+flask_cors
 Flask
 Gunicorn
