@@ -310,7 +310,11 @@ graph_app = graph.compile()
 
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS if needed
+extension_id = "fdidlfndmlghamocmcmmiljndmaphmbo"
+
+# Restrict CORS to only allow your extension's origin
+CORS(app, origins=[f"chrome-extension://{extension_id}"])
+# CORS(app)  # Enable CORS if needed
 
 
 @app.route("/analyze", methods=["POST"])
