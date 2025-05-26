@@ -27,7 +27,7 @@ MODEL = "llama-3.1-8b-instant"
 llm = ChatGroq(
     temperature=0,
     model_name=MODEL,
-    api_key="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",
+    api_key="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",
 )
 obb.obb.account.login(pat="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3Rva2VuIjoiUmc2aWFhdVExZ1dOcDUxWGlBUjRkYnVVUVllem5GR2t2S05EVWEybiIsImV4cCI6MTc2ODM4OTE0MX0.OdPqeDk8-U6b7XDyx42nClC3Mm_kmTwe77W1fQhksNU")
 obb.obb.user.preferences.output_type = "dataframe"
