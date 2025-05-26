@@ -322,12 +322,14 @@ def analyze():
     try:
         data = request.get_json()
         user_query = data.get("user_query", "")
-        print("user query " , user_query)
+        print("Received user query:", user_query)
+
         if not user_query:
             return jsonify({"error": "user_query is required"}), 400
 
         # Run the LangGraph workflow
         state = graph_app.invoke({"user_query": user_query})
+        print("LangGraph state:", state)
 
         # Prepare response data
         response_data = {"final_response": state["final_response"][-1].content}
@@ -354,6 +356,8 @@ def analyze():
         return jsonify(response_data)
 
     except Exception as e:
+        print("Error occurred:", str(e))
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
