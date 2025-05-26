@@ -1,6 +1,7 @@
 import os
-from dotenv import load_dotenv
-import streamlit as st
+# from dotenv import load_dotenv
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import textwrap
 from langgraph.graph import END, StateGraph
 from langchain_groq import ChatGroq
@@ -10,25 +11,25 @@ from duckduckgo_search import DDGS
 from langgraph.prebuilt import tools_condition, ToolNode
 import warnings
 from PIL import Image
-
+import os
 
 warnings.filterwarnings("ignore")
 
-load_dotenv()
+# load_dotenv(override=True)
 
 from utils import *
 from consts import *
 from classes import *
 
 MODEL = "llama-3.1-8b-instant"
+# MODEL = "llama-3.3-70b-versatile"
 
 llm = ChatGroq(
     temperature=0,
     model_name=MODEL,
-    api_key=os.environ.get("GROQ_API_KEY"),
+    api_key="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",
 )
-obb.obb.account.login(pat=os.environ.get("OPENBB_API_KEY"))
-# obb.user.credentials.orats_api_key = os.environ.get("OPENBB_API_KEY")
+obb.obb.account.login(pat="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3Rva2VuIjoiUmc2aWFhdVExZ1dOcDUxWGlBUjRkYnVVUVllem5GR2t2S05EVWEybiIsImV4cCI6MTc2ODM4OTE0MX0.OdPqeDk8-U6b7XDyx42nClC3Mm_kmTwe77W1fQhksNU")
 obb.obb.user.preferences.output_type = "dataframe"
 
 
@@ -305,63 +306,62 @@ graph.add_edge("financial_reporter", "final_answer")
 
 graph.set_entry_point("ticker_extractor")
 graph.set_finish_point("final_answer")
-app = graph.compile()
+graph_app = graph.compile()
 
 
-# App Title
-st.title("🤖 Crypto Financial Advisor")
+app = Flask(__name__)
 
-# User Input Section
-st.subheader("Enter Your Query")
-user_query = st.text_input("Ask your financial question (e.g., 'BTC price analysis')")
+# Your extension ID
+extension_id = "fdidlfndmlghamocmcmmiljndmaphmbo"
 
-# Process Query Button
-if st.button("Get Report"):
-    if user_query:
-        state = app.invoke({"user_query": user_query})
+# Enable CORS for only your extension
+CORS(app, origins=[f"chrome-extension://{extension_id}"])
+# CORS(app)  # Enable CORS if needed
 
-        # Display Price Analyst Report
+
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    try:
+        data = request.get_json()
+        user_query = data.get("user_query", "")
+        print("Received user query:", user_query)
+
+        if not user_query:
+            return jsonify({"error": "user_query is required"}), 400
+
+        # Run the LangGraph workflow
+        state = graph_app.invoke({"user_query": user_query})
+        print("LangGraph state:", state)
+
+        # Prepare response data
+        response_data = {"final_response": state["final_response"][-1].content}
+
         if ticker_check(state) == "yes":
-            st.subheader("📈 Price Analyst Report")
-            price_report = state.get("price_analyst_report", "No report available")
-            for line in price_report.split("\n"):
-                st.write(textwrap.fill(line, 80))
+            reports = {
+                "price_analyst_report": state.get("price_analyst_report", ""),
+                "news_analyst_report": state.get("news_analyst_report", ""),
+                "final_report": (
+                    {
+                        "action": state["final_report"].action,
+                        "score": state["final_report"].score,
+                        "trend": state["final_report"].trend,
+                        "sentiment": state["final_report"].sentiment,
+                        "price_predictions": state["final_report"].price_predictions,
+                        "summary": state["final_report"].summary,
+                    }
+                    if state.get("final_report")
+                    else None
+                ),
+            }
+            response_data.update(reports)
 
-            # Display News Analyst Report
-            st.subheader("📰 News Analyst Report")
-            news_report = state.get("news_analyst_report", "No report available")
-            for line in news_report.split("\n"):
-                st.write(textwrap.fill(line, 80))
+        return jsonify(response_data)
 
-            # Display Final Report
-            report = state.get("final_report", {})
-
-            if report:
-                st.subheader("📊 Final Report")
-                # st.write(type(report))
-                # print(report)
-                st.write(f"**Action:** {report.action}")
-                st.write(f"**Score:** {report.score}")
-                st.write(f"**Trend:** {report.trend}")
-                st.write(f"**Sentiment:** {report.sentiment}")
-
-                st.subheader("🔮 Price Predictions (4 Weeks Ahead)")
-                st.write(report.price_predictions)
-
-                st.subheader("📃 Summary")
-                st.write(textwrap.fill(report.summary))
-                st.subheader("Final Answer")
-                st.write(state["final_response"][-1].content)
-            else:
-                st.error("No final report available.")
-        else:
-            st.subheader("Final Answer")
-            st.write(state["final_response"][-1].content)
-
-    else:
-        st.error("Please enter a query.")
+    except Exception as e:
+        print("Error occurred:", str(e))
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 
-# Footer
-st.markdown("---")
-st.markdown("Developed by Prakhar Shukla with ❤️")
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5002, debug=True)

@@ -8,4 +8,5 @@ duckduckgo_search
 numpy==1.26.4
 flask
 flask_cors
-setuptools
+Flask
+Gunicorn
