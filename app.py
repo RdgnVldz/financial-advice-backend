@@ -312,7 +312,7 @@ graph_app = graph.compile()
 app = Flask(__name__)
 
 # Your extension ID
-extension_id = "fdidlfndmlghamocmcmmiljndmaphmbo"
+extension_id = "afebmagfbkjhjpgjohcgpplmnjlmpaam"
 
 # Enable CORS for only your extension
 CORS(app, origins=[f"chrome-extension://{extension_id}"])
