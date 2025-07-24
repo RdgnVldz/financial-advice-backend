@@ -1,5 +1,6 @@
 python-dotenv
 streamlit
+gunicorn
 langchain-groq==0.1.9
 langgraph==0.2.1
 openbb
@@ -8,5 +9,4 @@ duckduckgo_search
 numpy==1.26.4
 flask
 flask_cors
-Flask
-Gunicorn
+setuptools
