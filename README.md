@@ -66,3 +66,4 @@ All dependencies are listed in the requirements.txt file. These include:
 	•	Other essential libraries for data retrieval, NLP, and analysis
 
 
+"# GAIA-backend" 
